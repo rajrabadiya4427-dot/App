@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
-
+import Request from "../models/request.js"; 
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 
@@ -18,7 +18,7 @@ export const getusersForSidebar = async (req, res) => {
 
     // 2. Extract the other user's ID (not current user)
     const userIds = accepted
-      .filter(req => req.senderId && req.receiverId) // prevent null crash
+      .filter(req => req.senderId && req.receiverId)
       .map(req =>
         req.senderId.toString() === userId.toString()
           ? req.receiverId
