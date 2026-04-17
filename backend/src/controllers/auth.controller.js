@@ -4,17 +4,21 @@ import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, mobileNumber } = req.body;
   try {
-    if (!fullName || !email || !password) {
+    if (!fullName || !email || !password || !mobileNumber) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ email }, { mobileNumber }],
+    });
 
     if (user) return res.status(400).json({ message: "Email already exists" });
 
@@ -25,6 +29,7 @@ export const signup = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
+      mobileNumber,
     });
 
     if (newUser) {
@@ -37,6 +42,7 @@ export const signup = async (req, res) => {
         fullName: newUser.fullName,
         email: newUser.email,
         profilePic: newUser.profilePic,
+        mobileNumber: newUser.mobileNumber,
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -68,6 +74,7 @@ export const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
+      mobileNumber: newUser.mobileNumber,
     });
   } catch (error) {
     console.log("Error in login controller", error.message);
@@ -98,7 +105,7 @@ export const updateProfile = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { profilePic: uploadResponse.secure_url },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json(updatedUser);

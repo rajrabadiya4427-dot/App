@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User,Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import AuthImagePattern from "../components/AuthImagePattern";
@@ -12,6 +12,7 @@ const SignUpPage = () => {
     fullName: "",
     email: "",
     password: "",
+    mobileNumber: "",
   });
 
   const { signup, isSigningUp } = useAuthStore();
@@ -22,6 +23,7 @@ const SignUpPage = () => {
     if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
     if (!formData.password) return toast.error("Password is required");
     if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
+    if (formData.mobileNumber.length < 10) return toast.error("wrong mobile number");
 
     return true;
   };
@@ -71,6 +73,27 @@ const SignUpPage = () => {
                 />
               </div>
             </div>
+
+              <div className="form-control">
+              <label htmlFor="lable">
+                <span className="lable-text font-medium ml-10">Mobile No.</span>
+              </label>
+              <div className="relative flex">
+                <div className=" inset-y-0  pl-3 flex items-center pointer-events-none">
+                  <Phone className="size-5 text-white mr-2" />
+                </div>
+                <input
+                  type="text"
+                  className={`input input-bordered w-full pl-5`}
+                  placeholder="Mobile Number"
+                  value={formData.mobileNumber}
+                  onChange={(e) =>
+                    setFormData({ ...formData, mobileNumber: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
 
             <div className="form-control">
               <label className="label">

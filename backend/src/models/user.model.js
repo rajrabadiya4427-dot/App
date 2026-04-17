@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+     mobileNumber: {          
+      type: String,
+      required: true,
+      unique: true,
+    },
     profilePic: {
       type: String,
       default: "",
