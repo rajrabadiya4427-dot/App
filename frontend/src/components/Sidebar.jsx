@@ -150,7 +150,7 @@ const Sidebar = () => {
                         if (selectedUser?._id === user._id)
                           setSelectedUser(null);
                       } catch (error) {
-                        toast.error("Failed to remove friend");
+                        toast.error("Failed to remove friend",error);
                       }
                     }}
                     className="text-error"

@@ -40,7 +40,6 @@ const MessageInput = () => {
         image: imagePreview,
       });
 
-      // Clear form
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -72,7 +71,7 @@ const MessageInput = () => {
       )}
 
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        <div className="flex-1 flex gap-2">
+        <div className="flex-1 flex gap-2 relative">
           <input
             type="text"
             className="w-full input input-bordered rounded-lg input-sm sm:input-md"
@@ -81,10 +80,10 @@ const MessageInput = () => {
             onChange={(e) => setText(e.target.value)}
           />
 
-          {/* Emoji Button */}
+          {/* Emoji Button - Hidden on mobile, shown on sm+ */}
           <button
             type="button"
-            className="btn btn-circle btn-sm"
+            className="hidden sm:flex btn btn-circle btn-sm"
             onClick={() => setShowEmoji(!showEmoji)}
           >
             😊
@@ -109,15 +108,19 @@ const MessageInput = () => {
             onChange={handleImageChange}
           />
 
+          {/* Image Button - Always visible */}
           <button
             type="button"
-            className={`hidden sm:flex btn btn-circle
-                     ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+            className={`flex btn btn-circle btn-sm ${
+              imagePreview ? "text-emerald-500" : "text-zinc-400"
+            }`}
             onClick={() => fileInputRef.current?.click()}
           >
             <Image size={20} />
           </button>
         </div>
+
+        {/* Send Button */}
         <button
           type="submit"
           className="btn btn-sm btn-circle"
@@ -129,4 +132,5 @@ const MessageInput = () => {
     </div>
   );
 };
+
 export default MessageInput;
