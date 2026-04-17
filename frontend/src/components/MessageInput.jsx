@@ -81,25 +81,25 @@ const MessageInput = () => {
             onChange={(e) => setText(e.target.value)}
           />
 
-              {/* Emoji Button */}
-    <button
-      type="button"
-      className="btn btn-circle btn-sm"
-      onClick={() => setShowEmoji(!showEmoji)}
-    >
-      😊
-    </button>
+          {/* Emoji Button */}
+          <button
+            type="button"
+            className="btn btn-circle btn-sm"
+            onClick={() => setShowEmoji(!showEmoji)}
+          >
+            😊
+          </button>
 
-       {/* Emoji Picker */}
-   {showEmoji && (
-  <div className="absolute bottom-12 right-0 z-50">
-    <EmojiPicker
-      onEmojiClick={(emojiData) =>
-        setText((prev) => prev + emojiData.emoji)
-      }
-    />
-  </div>
-)}
+          {/* Emoji Picker */}
+          {showEmoji && (
+            <div className="absolute bottom-12 right-0 z-50">
+              <EmojiPicker
+                onEmojiClick={(emojiData) =>
+                  setText((prev) => prev + emojiData.emoji)
+                }
+              />
+            </div>
+          )}
 
           <input
             type="file"
