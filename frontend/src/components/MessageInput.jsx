@@ -83,7 +83,7 @@ const MessageInput = () => {
           {/* Emoji Button - Hidden on mobile, shown on sm+ */}
           <button
             type="button"
-            className="hidden sm:flex btn btn-circle btn-sm"
+            className="hidden sm:flex btn btn-circle size-22"
             onClick={() => setShowEmoji(!showEmoji)}
           >
             😊
@@ -116,7 +116,7 @@ const MessageInput = () => {
             }`}
             onClick={() => fileInputRef.current?.click()}
           >
-            <Image size={20} />
+            <Image size={22} />
           </button>
         </div>
 
