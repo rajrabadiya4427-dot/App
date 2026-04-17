@@ -42,7 +42,7 @@ export const signup = async (req, res) => {
         fullName: newUser.fullName,
         email: newUser.email,
         profilePic: newUser.profilePic,
-        mobileNumber: newUser.mobileNumber,
+          mobileNumber: newUser.mobileNumber,  
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });

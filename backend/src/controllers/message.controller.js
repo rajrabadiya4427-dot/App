@@ -8,6 +8,7 @@ export const getusersForSidebar = async (req, res) => {
   try {
     const userId = req.user._id;
 
+    // 1. Find all accepted requests involving current user
     const accepted = await Request.find({
       $or: [
         { senderId: userId, status: "accepted" },
@@ -15,19 +16,21 @@ export const getusersForSidebar = async (req, res) => {
       ],
     });
 
-    const userIds = accepted.map((r) =>
-      r.senderId.toString() === userId.toString()
-        ? r.receiverId
-        : r.senderId
-    );
+    // 2. Extract the other user's ID (not current user)
+    const userIds = accepted
+      .filter(req => req.senderId && req.receiverId) // prevent null crash
+      .map(req =>
+        req.senderId.toString() === userId.toString()
+          ? req.receiverId
+          : req.senderId
+      );
 
-    const users = await User.find({
-      _id: { $in: userIds },
-    }).select("-password");
+    // 3. Fetch user details (excluding passwords)
+    const users = await User.find({ _id: { $in: userIds } }).select("-password");
 
     res.json(users);
-
   } catch (error) {
+    console.error("🔥 Sidebar Error:", error.message, error.stack);
     res.status(500).json({ message: "Error fetching sidebar users" });
   }
 };
