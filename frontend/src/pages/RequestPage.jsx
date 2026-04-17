@@ -21,7 +21,7 @@ const RequestsPage = () => {
       </button>
 
       {/* Main Card */}
-      <div className="w-full  min-h-100   p-4 sm:p-6 rounded-xl bg-blackshadow-md">
+      <div className="w-full  min-h-100   p-4 sm:p-6 rounded-xl bg-black shadow-md">
         <h1 className="text-lg sm:text-xl font-bold mb-4">Requests</h1>
         <RequestList />
       </div>
