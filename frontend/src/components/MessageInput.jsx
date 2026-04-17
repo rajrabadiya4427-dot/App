@@ -70,8 +70,8 @@ const MessageInput = () => {
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        <div className="flex-1 flex gap-2 relative">
+      <form onSubmit={handleSendMessage} className="flex items-center justify-between gap-2">
+        <div className=" items-center justify-between flex gap-2 relative">
           <input
             type="text"
             className="w-full input input-bordered rounded-lg input-sm sm:input-md"
