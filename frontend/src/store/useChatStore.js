@@ -10,6 +10,13 @@ export const useChatStore = create((set, get) => ({
   isUsersLoading: false,
   isMessagesLoading: false,
 
+  wallpaper: localStorage.getItem("chatWallpaper") || null,
+
+  setWallpaper: (wallpaper) => {
+    localStorage.setItem("chatWallpaper", wallpaper);
+    set({ wallpaper });
+  },
+
   getUsers: async () => {
     set({ isUsersLoading: true });
     try {
@@ -36,11 +43,26 @@ export const useChatStore = create((set, get) => ({
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
     try {
-      const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
+      const res = await axiosInstance.post(
+        `/messages/send/${selectedUser._id}`,
+        messageData,
+      );
       set({ messages: [...messages, res.data] });
     } catch (error) {
       toast.error(error.response.data.message);
     }
+  },
+
+  listenWallpaperChange: () => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
+    socket.off("wallpaperChanged"); // avoid duplicate listeners
+
+    socket.on("wallpaperChanged", ({ wallpaper }) => {
+      localStorage.setItem("chatWallpaper", wallpaper);
+      set({ wallpaper });
+    });
   },
 
   subscribeToMessages: () => {
@@ -50,7 +72,8 @@ export const useChatStore = create((set, get) => ({
     const socket = useAuthStore.getState().socket;
 
     socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
+      const isMessageSentFromSelectedUser =
+        newMessage.senderId === selectedUser._id;
       if (!isMessageSentFromSelectedUser) return;
 
       set({

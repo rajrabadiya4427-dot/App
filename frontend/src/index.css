@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+html,
+body {
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+
+.chatbg {
+    background-image: url("/chat-bg.jpg");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.chatwall {
+    background-image: url('../src/chatWallpapers/premium_photo-1670595337767-1af7ce73df5c.avif');
+     background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}

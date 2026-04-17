@@ -13,6 +13,7 @@ export const useAuthStore = create((set, get) => ({
   isCheckingAuth: true,
   onlineUsers: [],
   socket: null,
+ requests: [],
 
   checkAuth: async () => {
     try {
@@ -101,5 +102,38 @@ export const useAuthStore = create((set, get) => ({
   },
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
+  },
+
+  acceptRequest: async (id) => {
+    try {
+      await axiosInstance.put(`/requests/accept/${id}`);
+
+      // refresh requests
+      get().getRequests();
+
+      // refresh sidebar users
+      if (get().getUsers) {
+        get().getUsers();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  sendRequest: async (mobileNumber) => {
+    try {
+      await axiosInstance.post("/requests/send", { mobileNumber });
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  getRequests: async () => {
+    try {
+      const res = await axiosInstance.get("/requests");
+      set({ requests: res.data });
+    } catch (error) {
+      console.log(error);
+    }
   },
 }));
