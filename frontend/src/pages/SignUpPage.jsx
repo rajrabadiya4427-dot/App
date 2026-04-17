@@ -74,22 +74,20 @@ const SignUpPage = () => {
               </div>
             </div>
 
-              <div className="form-control">
-              <label htmlFor="lable">
-                <span className="lable-text font-medium ml-10">Mobile No.</span>
+               <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium">Full Name</span>
               </label>
-              <div className="relative flex">
-                <div className=" inset-y-0  pl-3 flex items-center pointer-events-none">
-                  <Phone className="size-5 text-white mr-2" />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="size-5 text-base-content/40" />
                 </div>
                 <input
                   type="text"
-                  className={`input input-bordered w-full pl-5`}
-                  placeholder="Mobile Number"
+                  className={`input input-bordered w-full pl-10`}
+                  placeholder="John Doe"
                   value={formData.mobileNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, mobileNumber: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
                 />
               </div>
             </div>
