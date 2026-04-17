@@ -17,7 +17,7 @@ const RequestList = () => {
         >
           {/* Name */}
           <span className="text-sm sm:text-base ">
-            {req.senderId?.FullName}
+            {req.senderId?.fullName}
           </span>
 
           {/* Button */}

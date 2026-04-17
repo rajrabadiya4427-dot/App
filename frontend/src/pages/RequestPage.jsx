@@ -2,8 +2,11 @@ import RequestList from "../components/RequestList";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+
 const RequestsPage = () => {
   const navigate = useNavigate();
+
+  
 
   return (
     <div className="min-h-screen pt-16 px-3 sm:px-6 flex flex-col items-center w-full">
@@ -18,7 +21,7 @@ const RequestsPage = () => {
       </button>
 
       {/* Main Card */}
-      <div className="w-full max-w-2xl p-4 sm:p-6 rounded-xl bg-black min-h-100 shadow-md">
+      <div className="w-full  p-4 sm:p-6 rounded-xl bg-black min-h-100 shadow-md">
         <h1 className="text-lg sm:text-xl font-bold mb-4">Requests</h1>
         <RequestList />
       </div>
