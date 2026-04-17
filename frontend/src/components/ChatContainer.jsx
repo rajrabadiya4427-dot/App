@@ -25,9 +25,15 @@ const ChatContainer = () => {
     getMessages(selectedUser._id);
 
     subscribeToMessages();
-  listenWallpaperChange(); 
+    listenWallpaperChange();
     return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages,listenWallpaperChange ]);
+  }, [
+    selectedUser._id,
+    getMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+    listenWallpaperChange,
+  ]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
@@ -49,18 +55,22 @@ const ChatContainer = () => {
     <div className="flex flex-col h-full w-full">
       <ChatHeader />
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 chatwall"  style={{
-    backgroundImage: wallpaper ? `url(${wallpaper})` : "none",
-    backgroundSize: "cover",
-    backgroundPosition: "center",}}>
-      
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-4 chatwall"
+        style={{
+          backgroundImage: wallpaper ? `url(${wallpaper})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         {messages.map((message) => (
           <div
             key={message._id}
             className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
             ref={messageEndRef}
           >
-            <div className=" chat-image avatar">
+            {/* Avatar - Hidden on mobile, shown on sm and up */}
+            <div className="chat-image avatar hidden sm:block">
               <div className="size-10 rounded-full border">
                 <img
                   src={
@@ -72,11 +82,13 @@ const ChatContainer = () => {
                 />
               </div>
             </div>
+
             <div className="chat-header mb-1">
               <time className="text-xs opacity-50 ml-1">
                 {formatMessageTime(message.createdAt)}
               </time>
             </div>
+
             <div className="chat-bubble flex flex-col">
               {message.image && (
                 <img
@@ -89,7 +101,7 @@ const ChatContainer = () => {
             </div>
           </div>
         ))}
-          <div ref={messageEndRef} />
+        <div ref={messageEndRef} />
       </div>
 
       <MessageInput />
