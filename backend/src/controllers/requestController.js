@@ -1,5 +1,5 @@
 import Request from "../models/request.js";
-import User from "../models/user.js";
+import User from "../models/user.model.js";
 import { io, getReceiverSocketId } from "../lib/socket.js";
 
 export const sendRequest = async (req, res) => {
