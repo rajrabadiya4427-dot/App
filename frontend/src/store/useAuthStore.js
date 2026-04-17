@@ -99,6 +99,17 @@ export const useAuthStore = create((set, get) => ({
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
+    socket.on("friendDeleted", ({ friendId }) => {
+  // Refresh the sidebar to remove the deleted friend
+  import("../store/useChatStore").then(({ useChatStore }) => {
+    useChatStore.getState().getUsers();
+    // Also deselect if the deleted friend was selected
+    const { selectedUser, setSelectedUser } = useChatStore.getState();
+    if (selectedUser?._id === friendId) {
+      setSelectedUser(null);
+    }
+  });
+});
 
     // ✅ NEW: Listen for accepted requests and refresh sidebar
     socket.on("requestAccepted", () => {

@@ -6,6 +6,9 @@ import { User2Icon } from "lucide-react";
 import InviteUser from "./InviteUser";
 import { useNavigate } from "react-router-dom";
 import RequestList from "./RequestList";
+import { MoreVertical, UserMinus } from "lucide-react";
+import toast from "react-hot-toast";
+import axios from "axios";    
 
 const Sidebar = () => {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
@@ -88,38 +91,69 @@ const filteredUsers = Array.isArray(users)
 
       <div className="overflow-y-auto w-full py-3">
         {filteredUsers.map((user) => (
-          <button
-            key={user._id}
-            onClick={() => setSelectedUser(user)}
-            className={`
-              w-full p-3 flex items-center gap-3
-              hover:bg-base-300 transition-colors
-              ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
-            `}
-          >
-            <div className="relative mx-auto lg:mx-0">
-              <img
-                src={user.profilePic || "/avatar.png"}
-                alt={user.name}
-                className="size-12 object-cover rounded-full"
-              />
-              {onlineUsers.includes(user._id) && (
-                <span
-                  className="absolute bottom-0 right-0 size-3 bg-green-500 
-                  rounded-full ring-2 ring-zinc-900"
-                />
-              )}
-            </div>
+  <div
+    key={user._id}
+    className={`
+      w-full p-3 flex items-center gap-3 relative
+      hover:bg-base-300 transition-colors
+      ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
+    `}
+  >
+    {/* Avatar + Online Indicator */}
+    <button
+      onClick={() => setSelectedUser(user)}
+      className="flex items-center gap-3 w-full text-left"
+    >
+      <div className="relative mx-auto lg:mx-0">
+        <img
+          src={user.profilePic || "/avatar.png"}
+          alt={user.fullName}
+          className="size-12 object-cover rounded-full"
+        />
+        {onlineUsers.includes(user._id) && (
+          <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
+        )}
+      </div>
+      <div className="hidden lg:block text-left min-w-0">
+        <div className="font-medium truncate">{user.fullName}</div>
+        <div className="text-sm text-zinc-400">
+          {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+        </div>
+      </div>
+    </button>
 
-            {/* User info - only visible on larger screens */}
-            <div className="hidden lg:block text-left min-w-0">
-              <div className="font-medium truncate">{user.fullName}</div>
-              <div className="text-sm text-zinc-400">
-                {onlineUsers.includes(user._id) ? "Online" : "Offline"}
-              </div>
-            </div>
+    {/* Three-dot menu */}
+    <div className="dropdown dropdown-end">
+      <label tabIndex={0} className="btn btn-ghost btn-xs btn-circle">
+        <MoreVertical className="w-4 h-4" />
+      </label>
+      <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40">
+        <li>
+          <button
+            onClick={async () => {
+              try {
+                await axios.delete(`/api/requests/friend/${user._id}`, {
+                  withCredentials: true,
+                });
+                toast.success(`${user.fullName} removed from friends`);
+                // Refresh sidebar users
+                getUsers();
+                // If currently selected user is removed, deselect
+                if (selectedUser?._id === user._id) setSelectedUser(null);
+              } catch (error) {
+                toast.error("Failed to remove friend");
+              }
+            }}
+            className="text-error"
+          >
+            <UserMinus className="w-4 h-4" />
+            Delete Friend
           </button>
-        ))}
+        </li>
+      </ul>
+    </div>
+  </div>
+))}
 
       
       </div>

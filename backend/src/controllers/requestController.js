@@ -74,3 +74,35 @@ export const acceptRequest = async (req, res) => {
     res.status(500).json({ message: "Error accepting request" });
   }
 };
+
+// Add at the end of the file
+export const deleteFriend = async (req, res) => {
+  try {
+    const { friendId } = req.params;
+    const userId = req.user._id;
+
+    // Find and delete the accepted request in either direction
+    const deletedRequest = await Request.findOneAndDelete({
+      $or: [
+        { senderId: userId, receiverId: friendId, status: "accepted" },
+        { senderId: friendId, receiverId: userId, status: "accepted" },
+      ],
+    });
+
+    if (!deletedRequest) {
+      return res.status(404).json({ message: "Friend connection not found" });
+    }
+
+    // Notify both users to refresh their sidebar (optional)
+    const senderSocket = getReceiverSocketId(userId);
+    const receiverSocket = getReceiverSocketId(friendId);
+
+    if (senderSocket) io.to(senderSocket).emit("friendDeleted", { friendId });
+    if (receiverSocket) io.to(receiverSocket).emit("friendDeleted", { friendId: userId });
+
+    res.json({ message: "Friend removed successfully" });
+  } catch (error) {
+    console.error("Delete friend error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
