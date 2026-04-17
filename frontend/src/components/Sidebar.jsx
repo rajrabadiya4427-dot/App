@@ -74,7 +74,7 @@ const filteredUsers = Array.isArray(users)
             Close
           </button>
         </div>
-      )}
+      )}  
 
       {showRequests && (
         <div className="p-3 border-b border-base-300">

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Camera, Mail, User } from "lucide-react";
+import { Camera, Mail, User ,ArrowLeft} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
-
+ const navigate = useNavigate();
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -24,6 +25,13 @@ const ProfilePage = () => {
   return (
     <div className="h-screen pt-20">
       <div className="max-w-2xl mx-auto p-4 py-8">
+          <button
+        onClick={() => navigate("/")}
+        className="mb-4 flex items-center gap-2 text-sm sm:text-base text-base-content/70 hover:text-base-content transition-colors self-start max-w-2xl w-full"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Home</span>
+      </button>
         <div className="bg-base-300 rounded-xl p-6 space-y-8">
           <div className="text-center">
             <h1 className="text-2xl font-semibold ">Profile</h1>
