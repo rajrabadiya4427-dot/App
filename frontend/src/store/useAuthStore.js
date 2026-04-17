@@ -2,8 +2,10 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import { useChatStore } from "./useChatStore";
 
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
+const BASE_URL =
+  import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -13,7 +15,7 @@ export const useAuthStore = create((set, get) => ({
   isCheckingAuth: true,
   onlineUsers: [],
   socket: null,
- requests: [],
+  requests: [],
 
   checkAuth: async () => {
     try {
@@ -83,23 +85,30 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  // useAuthStore.js
   connectSocket: () => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
     const socket = io(BASE_URL, {
-      query: {
-        userId: authUser._id,
-      },
+      query: { userId: authUser._id },
     });
     socket.connect();
-
-    set({ socket: socket });
+    set({ socket });
 
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
+
+    // ✅ NEW: Listen for accepted requests and refresh sidebar
+    socket.on("requestAccepted", () => {
+      // Trigger a refresh of the contact list
+      import("../store/useChatStore").then(({ useChatStore }) => {
+        useChatStore.getState().getUsers();
+      });
+    });
   },
+
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
   },
@@ -110,11 +119,8 @@ export const useAuthStore = create((set, get) => ({
 
       // refresh requests
       get().getRequests();
-
-      // refresh sidebar users
-      if (get().getUsers) {
-        get().getUsers();
-      }
+      useChatStore.getState().getUsers();
+   
     } catch (error) {
       console.error(error);
     }
