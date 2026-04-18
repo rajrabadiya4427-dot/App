@@ -60,12 +60,18 @@ export const sendMessage = async (req, res) => {
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
-    let imageUrl;
-    if (image) {
-      // Upload base64 image to cloudinary
-      const uploadResponse = await cloudinary.uploader.upload(image);
-      imageUrl = uploadResponse.secure_url;
-    }
+  let imageUrl;
+if (image) {
+  try {
+    const uploadResponse = await cloudinary.uploader.upload(image, {
+      folder: "chat_images", // optional
+    });
+    imageUrl = uploadResponse.secure_url;
+  } catch (uploadError) {
+    console.error("Cloudinary upload error:", uploadError);
+    return res.status(400).json({ error: "Image upload failed" });
+  }
+}
 
     const newMessage = new Message({
       senderId,

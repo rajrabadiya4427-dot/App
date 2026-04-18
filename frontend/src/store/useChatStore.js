@@ -40,18 +40,49 @@ export const useChatStore = create((set, get) => ({
       set({ isMessagesLoading: false });
     }
   },
-  sendMessage: async (messageData) => {
-    const { selectedUser, messages } = get();
-    try {
-      const res = await axiosInstance.post(
-        `/messages/send/${selectedUser._id}`,
-        messageData,
-      );
-      set({ messages: [...messages, res.data] });
-    } catch (error) {
-      toast.error(error.response.data.message);
-    }
-  },
+  
+sendMessage: async (messageData) => {
+  const { selectedUser, messages } = get();
+  const authUser = useAuthStore.getState().authUser;
+  const isImage = !!messageData.image;
+
+  // Temporary ID for optimistic update
+  const tempId = `temp-${Date.now()}`;
+
+  // Optimistic message object
+  const optimisticMessage = {
+    _id: tempId,
+    senderId: authUser._id,
+    receiverId: selectedUser._id,
+    text: isImage ? "" : messageData.text,
+    image: isImage ? messageData.image : undefined,
+    createdAt: new Date().toISOString(),
+    pending: true, // flag for UI styling
+  };
+
+  // Add to messages immediately (for text or image preview)
+  set({ messages: [...messages, optimisticMessage] });
+
+  try {
+    const res = await axiosInstance.post(
+      `/messages/send/${selectedUser._id}`,
+      messageData
+    );
+
+    // Replace temp message with real one from server
+    set((state) => ({
+      messages: state.messages.map((msg) =>
+        msg._id === tempId ? res.data : msg
+      ),
+    }));
+  } catch (error) {
+    // Remove temp message on failure
+    set((state) => ({
+      messages: state.messages.filter((msg) => msg._id !== tempId),
+    }));
+    toast.error(error.response?.data?.message || "Failed to send message");
+  }
+},
 
   listenWallpaperChange: () => {
     const socket = useAuthStore.getState().socket;
@@ -65,22 +96,37 @@ export const useChatStore = create((set, get) => ({
     });
   },
 
-  subscribeToMessages: () => {
-    const { selectedUser } = get();
-    if (!selectedUser) return;
+subscribeToMessages: () => {
+  const { selectedUser } = get();
+  if (!selectedUser) return;
+  const socket = useAuthStore.getState().socket;
+  
+  socket.off("newMessage"); // remove old listener
+  socket.on("newMessage", (newMessage) => {
+    // Only add if message is for current chat
+    const isRelevant = 
+      (newMessage.senderId === selectedUser._id && newMessage.receiverId === useAuthStore.getState().authUser._id) ||
+      (newMessage.senderId === useAuthStore.getState().authUser._id && newMessage.receiverId === selectedUser._id);
+    
+    if (!isRelevant) return;
 
-    const socket = useAuthStore.getState().socket;
-
-    socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser =
-        newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
-
-      set({
-        messages: [...get().messages, newMessage],
-      });
+    set((state) => {
+      // Avoid duplicate (if we already optimistically added)
+      const exists = state.messages.some(msg => msg._id === newMessage._id);
+      if (exists) {
+        // Replace temp message
+        return {
+          messages: state.messages.map(msg =>
+            msg._id === newMessage._id || (msg.pending && msg.text === newMessage.text && !msg.image)
+              ? newMessage
+              : msg
+          ),
+        };
+      }
+      return { messages: [...state.messages, newMessage] };
     });
-  },
+  });
+},
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
