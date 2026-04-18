@@ -86,54 +86,39 @@ export const useAuthStore = create((set, get) => ({
   },
 
   // useAuthStore.js
- connectSocket: () => {
-  const { authUser } = get();
-  if (!authUser || get().socket?.connected) return;
+  connectSocket: () => {
+    const { authUser } = get();
+    if (!authUser || get().socket?.connected) return;
 
-  const socket = io(BASE_URL, {
-    query: { userId: authUser._id },
-  });
-  socket.connect();
-  set({ socket });
+    const socket = io(BASE_URL, {
+      query: { userId: authUser._id },
+    });
+    socket.connect();
+    set({ socket });
 
-  // Remove old listeners
-  socket.off("getOnlineUsers");
-  socket.off("userDeleted");
-  socket.off("contactRemoved");
-  socket.off("requestAccepted");
-
-  socket.on("getOnlineUsers", (userIds) => {
-    set({ onlineUsers: userIds });
-  });
-
-  // ✅ Handle userDeleted with safe check
-  socket.on("userDeleted", (data) => {
-    // data could be string or object
-    const deletedUserId = typeof data === "object" ? data.userId : data;
-    if (get().authUser?._id === deletedUserId) {
-      get().logout();
-      toast.error("Your account has been deleted.");
+    socket.on("getOnlineUsers", (userIds) => {
+      set({ onlineUsers: userIds });
+    });
+    socket.on("friendDeleted", ({ friendId }) => {
+  // Refresh the sidebar to remove the deleted friend
+  import("../store/useChatStore").then(({ useChatStore }) => {
+    useChatStore.getState().getUsers();
+    // Also deselect if the deleted friend was selected
+    const { selectedUser, setSelectedUser } = useChatStore.getState();
+    if (selectedUser?._id === friendId) {
+      setSelectedUser(null);
     }
   });
+});
 
-  // ✅ Handle contactRemoved with safe check
-  socket.on("contactRemoved", (data) => {
-    const removedUserId = typeof data === "object" ? data.userId : data;
-    const chatStore = useChatStore.getState();
-    
-    // Deselect if the removed user is currently selected
-    if (chatStore.selectedUser?._id === removedUserId) {
-      chatStore.setSelectedUser(null);
-    }
-    // Refresh the sidebar user list
-    chatStore.getUsers();
-  });
-
-  socket.on("requestAccepted", (data) => {
-    // Trigger refresh
-    useChatStore.getState().getUsers(data);
-  });
-},
+    // ✅ NEW: Listen for accepted requests and refresh sidebar
+    socket.on("requestAccepted", () => {
+      // Trigger a refresh of the contact list
+      import("../store/useChatStore").then(({ useChatStore }) => {
+        useChatStore.getState().getUsers();
+      });
+    });
+  },
 
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
