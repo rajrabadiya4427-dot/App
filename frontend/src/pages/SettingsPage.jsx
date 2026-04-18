@@ -11,7 +11,7 @@ const SettingsPage = () => {
   const { theme, setTheme } = useThemeStore();
  const navigate = useNavigate();
   return (
-    <div className="h-screen container mx-auto px-4 pt-20 max-w-5xl">
+    <div className="min-h-screen container mx-auto px-4 pt-20 max-w-5xl">
        <button
         onClick={() => navigate("/")}
         className="mb-4 flex items-center gap-2 text-sm sm:text-base text-base-content/70 hover:text-base-content transition-colors self-start max-w-2xl w-full"
