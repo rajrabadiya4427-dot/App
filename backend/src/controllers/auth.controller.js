@@ -102,11 +102,18 @@ export const updateProfile = async (req, res) => {
     }
 
     const uploadResponse = await cloudinary.uploader.upload(profilePic);
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { profilePic: uploadResponse.secure_url },
-      { new: true },
-    );
+ 
+
+    // After updating user...
+const updatedUser = await User.findByIdAndUpdate(...);
+// Emit to all friends
+const friends = await getFriendIds(userId);
+friends.forEach(friendId => {
+  const socketId = getReceiverSocketId(friendId);
+  if (socketId) {
+    io.to(socketId).emit("userProfileUpdated", { userId, profilePic: updatedUser.profilePic, fullName: updatedUser.fullName });
+  }
+});
 
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -121,5 +128,36 @@ export const checkAuth = (req, res) => {
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    await User.findByIdAndDelete(userId);
+    // Optionally delete related messages, requests etc.
+
+    // Emit socket event to all connected clients of this user
+    const userSocketId = getReceiverSocketId(userId);
+    if (userSocketId) {
+      io.to(userSocketId).emit("userDeleted", { userId });
+    }
+
+    // Also notify all friends (accepted contacts) to remove from sidebar
+    const acceptedRequests = await Request.find({
+      $or: [{ senderId: userId, status: "accepted" }, { receiverId: userId, status: "accepted" }],
+    });
+    acceptedRequests.forEach((req) => {
+      const friendId = req.senderId.toString() === userId.toString() ? req.receiverId : req.senderId;
+      const friendSocketId = getReceiverSocketId(friendId);
+      if (friendSocketId) {
+        io.to(friendSocketId).emit("contactRemoved", { userId });
+      }
+    });
+
+    res.clearCookie("jwt");
+    res.status(200).json({ message: "Account deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 };
