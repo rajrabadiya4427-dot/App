@@ -96,7 +96,7 @@ const Sidebar = () => {
         </div>
       )}
 
-      <div className="overflow-y-auto w-full min-h-full userss  py-3">
+      <div className="overflow-y-auto w-full flex-1 hide-scrollbar py-3">
         {filteredUsers.map((user) => (
           <div
             key={user._id}
