@@ -63,24 +63,36 @@ const ChatHeader = () => {
           </button>
         </div>
 
-        {showWallpaper && (
-          <div className="absolute min-h-50 right-3 top-14 z-50 bg-base-200 p-3 rounded-xl shadow-xl w-64">
-            <div className="grid grid-cols-3 gap-2">
-              {wallpapers.map((img) => (
-                <img
-                  key={img}
-                  src={img}
-                  className="w-full h-16 object-cover rounded-lg cursor-pointer hover:scale-105 transition"
-                  onClick={() => {
-                    setWallpaper(img);
-                    emitWallpaperChange(img, selectedUser._id); // 🔥 THIS LINE
-                    setShowWallpaper(false);
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+       {showWallpaper && (
+  <div className="absolute min-h-50 right-3 top-14 z-50 bg-base-200 p-3 rounded-xl shadow-xl w-64">
+    <div className="grid grid-cols-3 gap-2">
+      {/* Default reset tile */}
+      <div
+        className="w-full h-16 rounded-lg cursor-pointer border-2 border-dashed border-base-content/30 flex items-center justify-center text-xs text-base-content/70 hover:bg-base-300 transition"
+        onClick={() => {
+          setWallpaper(null);
+          localStorage.removeItem("chatWallpaper");
+          emitWallpaperChange(null, selectedUser._id);
+          setShowWallpaper(false);
+        }}
+      >
+        Default
+      </div>
+      {wallpapers.map((img) => (
+        <img
+          key={img}
+          src={img}
+          className="w-full h-16 object-cover rounded-lg cursor-pointer hover:scale-105 transition"
+          onClick={() => {
+            setWallpaper(img);
+            emitWallpaperChange(img, selectedUser._id);
+            setShowWallpaper(false);
+          }}
+        />
+      ))}
+    </div>
+  </div>
+)}
       </div>
     </div>
   );

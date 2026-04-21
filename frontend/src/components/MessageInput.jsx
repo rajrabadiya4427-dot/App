@@ -30,23 +30,32 @@ const MessageInput = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!text.trim() && !imagePreview) return;
+const handleSendMessage = async (e) => {
+  e.preventDefault();
+  if (!text.trim() && !imagePreview) return;
 
-    try {
-      await sendMessage({
-        text: text.trim(),
-        image: imagePreview,
-      });
+  // Capture current values
+  const messageText = text.trim();
+  const messageImage = imagePreview;
 
-      setText("");
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    } catch (error) {
-      console.error("Failed to send message:", error);
-    }
-  };
+  // Clear input immediately
+  setText("");
+  setImagePreview(null);
+  if (fileInputRef.current) fileInputRef.current.value = "";
+
+  try {
+    await sendMessage({
+      text: messageText,
+      image: messageImage,
+    });
+  } catch (error) {
+    console.error("Failed to send message:", error);
+    toast.error("Message failed to send");
+    // Optional: restore the message to input if you want
+    // setText(messageText);
+    // setImagePreview(messageImage);
+  }
+};
 
   return (
     <div className="p-4 w-full">

@@ -84,6 +84,11 @@ export const useAuthStore = create((set, get) => ({
       set({ isUpdatingProfile: false });
     }
   },
+  emitWallpaperChange: (wallpaper, receiverId) => {
+  const { socket } = get();
+  if (!socket) return;
+  socket.emit("wallpaperChange", { wallpaper, receiverId });
+},
 
   // useAuthStore.js
   connectSocket: () => {
