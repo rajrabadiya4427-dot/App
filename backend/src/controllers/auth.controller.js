@@ -20,7 +20,7 @@ export const signup = async (req, res) => {
       $or: [{ email }, { mobileNumber }],
     });
 
-    if (user) return res.status(400).json({ message: "Email already exists" });
+    if (user) return res.status(400).json({ message: "Email or mobileNumber already exists" });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
