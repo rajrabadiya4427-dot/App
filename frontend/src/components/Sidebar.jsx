@@ -121,7 +121,7 @@ const Sidebar = () => {
                   <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
                 )}
               </div>
-              <div className="hidden lg:block min-w-0">
+              <div className="lg:block min-w-0">
                 <div className="font-medium truncate">{user.fullName}</div>
                 <div className="text-sm text-zinc-400">
                   {onlineUsers.includes(user._id) ? "Online" : "Offline"}
