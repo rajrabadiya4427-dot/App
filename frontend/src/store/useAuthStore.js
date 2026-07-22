@@ -105,11 +105,24 @@ export const useAuthStore = create((set, get) => ({
     // Initialize Push Notifications for current user
     initPushNotifications();
 
+    const initChatListeners = () => {
+      import("./useChatStore").then(({ useChatStore }) => {
+        useChatStore.getState().subscribeToMessages();
+        useChatStore.getState().listenWallpaperChange();
+      });
+    };
+
+    socket.on("connect", () => {
+      initChatListeners();
+    });
+
+    initChatListeners();
+
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
     socket.on("friendDeleted", ({ friendId }) => {
-      import("../store/useChatStore").then(({ useChatStore }) => {
+      import("./useChatStore").then(({ useChatStore }) => {
         useChatStore.getState().getUsers();
         const { selectedUser, setSelectedUser } = useChatStore.getState();
         if (selectedUser?._id === friendId) {
@@ -119,7 +132,7 @@ export const useAuthStore = create((set, get) => ({
     });
 
     socket.on("requestAccepted", () => {
-      import("../store/useChatStore").then(({ useChatStore }) => {
+      import("./useChatStore").then(({ useChatStore }) => {
         useChatStore.getState().getUsers();
       });
     });

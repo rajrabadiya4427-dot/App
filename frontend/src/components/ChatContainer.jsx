@@ -22,16 +22,16 @@ const ChatContainer = () => {
   const { listenWallpaperChange } = useChatStore();
 
   useEffect(() => {
-    getMessages(selectedUser._id);
+    if (selectedUser?._id) {
+      getMessages(selectedUser._id);
+    }
 
     subscribeToMessages();
     listenWallpaperChange();
-    return () => unsubscribeFromMessages();
   }, [
-    selectedUser._id,
+    selectedUser?._id,
     getMessages,
     subscribeToMessages,
-    unsubscribeFromMessages,
     listenWallpaperChange,
   ]);
 

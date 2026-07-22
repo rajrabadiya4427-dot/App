@@ -100,9 +100,10 @@ export const useChatStore = create((set, get) => ({
     socket.on("newMessage", (newMessage) => {
       const { selectedUser, messages, users, unreadCounts, lastMessages } = get();
 
-      const senderId = newMessage.senderId;
+      const senderId = String(newMessage.senderId);
+      const selectedUserId = selectedUser ? String(selectedUser._id) : null;
       const isMessageSentFromSelectedUser =
-        selectedUser && senderId === selectedUser._id;
+        selectedUserId && senderId === selectedUserId;
 
       // Update last messages for sender
       const updatedLastMessages = {
@@ -133,7 +134,7 @@ export const useChatStore = create((set, get) => ({
 
       // Show notification if app is hidden/minimized OR message is from unselected user
       if (document.hidden || !isMessageSentFromSelectedUser) {
-        const sender = users.find((u) => u._id === senderId);
+        const sender = users.find((u) => String(u._id) === senderId);
         const title = newMessage.senderName || sender?.fullName || "New Message";
         const body = newMessage.text || (newMessage.image ? "📷 Photo" : "Sent a message");
         const icon = newMessage.senderPic || sender?.profilePic || "/chaticon.jpg";
