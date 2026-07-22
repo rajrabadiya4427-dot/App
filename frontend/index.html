@@ -4,11 +4,21 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="./chaticon.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
     <meta name="description" content="Friendly Chat - A modern real-time chat application to connect with friends, send instant messages, and share media securely." />
     <title>Friendly Chat | Real-Time Messaging App</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Immediate initial paint HTML fallback for instant FCP -->
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; text-align: center; padding: 1rem;">
+        <div style="width: 56px; height: 56px; margin-bottom: 16px; border-radius: 16px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <h1 style="font-size: 1.5rem; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.025em;">Friendly Chat</h1>
+        <p style="font-size: 0.875rem; color: #94a3b8; margin: 0;">Connecting your world...</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

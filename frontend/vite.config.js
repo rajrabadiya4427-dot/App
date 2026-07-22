@@ -10,11 +10,11 @@ export default defineConfig({
       registerType: "autoUpdate",
 
       manifest: {
-        name: "Chat App",
-        short_name: "App",
-        description: "My MERN Application",
-        theme_color: "#ffffff",
-        background_color: "#ffffff",
+        name: "Friendly Chat",
+        short_name: "FriendlyChat",
+        description: "Real-Time Messaging Application",
+        theme_color: "#0f172a",
+        background_color: "#0f172a",
         display: "standalone",
         start_url: "/",
 
@@ -33,8 +33,15 @@ export default defineConfig({
       },
     }),
   ],
-    build: {
-    // Set the limit to 1000 KiB
+  build: {
     chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom", "zustand", "axios"],
+          icons: ["lucide-react"],
+        },
+      },
+    },
   },
 });
