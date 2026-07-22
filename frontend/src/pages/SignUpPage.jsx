@@ -57,7 +57,7 @@ const SignUpPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="form-control">
-              <label className="label">
+              <label className="label" htmlFor="signup-name">
                 <span className="label-text font-medium">Full Name</span>
               </label>
               <div className="relative">
@@ -65,8 +65,9 @@ const SignUpPage = () => {
                   <User className="size-5 text-base-content/40" />
                 </div>
                 <input
+                  id="signup-name"
                   type="text"
-                  className={`input input-bordered w-full pl-10`}
+                  className="input input-bordered w-full pl-10"
                   placeholder="John Doe"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
@@ -74,8 +75,8 @@ const SignUpPage = () => {
               </div>
             </div>
 
-               <div className="form-control">
-              <label className="label">
+            <div className="form-control">
+              <label className="label" htmlFor="signup-mobile">
                 <span className="label-text font-medium">Mobile Number</span>
               </label>
               <div className="relative">
@@ -83,18 +84,18 @@ const SignUpPage = () => {
                   <Phone className="size-5 text-base-content/40" />
                 </div>
                 <input
-                  type="text"
-                  className={`input input-bordered w-full pl-10`}
-                  placeholder="John Doe"
+                  id="signup-mobile"
+                  type="tel"
+                  className="input input-bordered w-full pl-10"
+                  placeholder="1234567890"
                   value={formData.mobileNumber}
                   onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
                 />
               </div>
             </div>
 
-
             <div className="form-control">
-              <label className="label">
+              <label className="label" htmlFor="signup-email">
                 <span className="label-text font-medium">Email</span>
               </label>
               <div className="relative">
@@ -102,8 +103,9 @@ const SignUpPage = () => {
                   <Mail className="size-5 text-base-content/40" />
                 </div>
                 <input
+                  id="signup-email"
                   type="email"
-                  className={`input input-bordered w-full pl-10`}
+                  className="input input-bordered w-full pl-10"
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -112,7 +114,7 @@ const SignUpPage = () => {
             </div>
 
             <div className="form-control">
-              <label className="label">
+              <label className="label" htmlFor="signup-password">
                 <span className="label-text font-medium">Password</span>
               </label>
               <div className="relative">
@@ -120,8 +122,9 @@ const SignUpPage = () => {
                   <Lock className="size-5 text-base-content/40" />
                 </div>
                 <input
+                  id="signup-password"
                   type={showPassword ? "text" : "password"}
-                  className={`input input-bordered w-full pl-10`}
+                  className="input input-bordered w-full pl-10"
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -130,6 +133,7 @@ const SignUpPage = () => {
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
                     <EyeOff className="size-5 text-base-content/40" />

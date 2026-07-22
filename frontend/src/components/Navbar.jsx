@@ -25,28 +25,24 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             <Link
               to={"/settings"}
-              className={`
-              btn btn-sm gap-2 transition-colors
-              
-              `}
+              className="btn btn-sm gap-2 transition-colors"
+              aria-label="Settings"
             >
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
             </Link>
 
-            
-              <>
-                <Link to={"/profile"} className={`btn btn-sm gap-2`}>
-                  <User className="size-5" />
-                  <span className="hidden sm:inline">Profile</span>
-                </Link>
+            <>
+              <Link to={"/profile"} className="btn btn-sm gap-2" aria-label="Profile">
+                <User className="size-5" />
+                <span className="hidden sm:inline">Profile</span>
+              </Link>
 
-                <button className="flex gap-2 items-center" onClick={logout}>
-                  <LogOut className="size-5" />
-                  <span className="hidden sm:inline">Logout</span>
-                </button>
-              </>
-           
+              <button type="button" className="btn btn-sm gap-2 flex items-center" onClick={logout} aria-label="Logout">
+                <LogOut className="size-5" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </>
           </div>
         </div>
       </div>
