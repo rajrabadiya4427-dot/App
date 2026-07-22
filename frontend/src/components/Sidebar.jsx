@@ -11,8 +11,15 @@ import toast from "react-hot-toast";
 import axios from "axios";
 
 const Sidebar = () => {
-  const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } =
-    useChatStore();
+  const {
+    getUsers,
+    users,
+    selectedUser,
+    setSelectedUser,
+    isUsersLoading,
+    unreadCounts,
+    lastMessages,
+  } = useChatStore();
 
   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -97,72 +104,110 @@ const Sidebar = () => {
       )}
 
       <div className="overflow-y-auto w-full flex-1 hide-scrollbar py-3">
-        {filteredUsers.map((user) => (
-          <div
-            key={user._id}
-            className={`
-      w-full p-3 flex items-center justify-between gap-3
-      hover:bg-base-300 transition-colors
-      ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
-    `}
-          >
-            {/* LEFT SIDE: Avatar + Name (clickable to select chat) */}
-            <button
-              onClick={() => setSelectedUser(user)}
-              className="flex items-center gap-3 min-w-0 flex-1 text-left"
-            >
-              <div className="relative shrink-0">
-                <img
-                  src={user.profilePic || "/avatar.png"}
-                  alt={user.fullName}
-                  className="size-12 object-cover rounded-full"
-                />
-                {onlineUsers.includes(user._id) && (
-                  <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
-                )}
-              </div>
-              <div className="lg:block min-w-0">
-                <div className="font-medium truncate">{user.fullName}</div>
-                <div className="text-sm text-zinc-400">
-                  {onlineUsers.includes(user._id) ? "Online" : "Offline"}
-                </div>
-              </div>
-            </button>
+        {filteredUsers.map((user) => {
+          const isOnline = onlineUsers.includes(user._id);
+          const unreadCount = unreadCounts[user._id] || 0;
+          const lastMsg = lastMessages[user._id] || user.lastMessage;
+          const lastMsgText = lastMsg
+            ? lastMsg.text
+              ? lastMsg.text
+              : lastMsg.image
+              ? "📷 Photo"
+              : ""
+            : "";
 
-            {/* RIGHT SIDE: Three-dot menu */}
-            <div className="dropdown dropdown-end shrink-0">
-              <label tabIndex={0} className="btn btn-ghost btn-xs btn-circle">
-                <MoreVertical className="w-4 h-4" />
-              </label>
-              <ul
-                tabIndex={0}
-                className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40"
+          return (
+            <div
+              key={user._id}
+              className={`
+                w-full p-3 flex items-center justify-between gap-3
+                hover:bg-base-300 transition-colors cursor-pointer
+                ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
+              `}
+            >
+              {/* LEFT SIDE: Avatar + Name + Last Message (clickable to select chat) */}
+              <button
+                onClick={() => setSelectedUser(user)}
+                className="flex items-center gap-3 min-w-0 flex-1 text-left"
               >
-                <li>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await axios.delete(`/api/requests/friend/${user._id}`, {
-                          withCredentials: true,
-                        });
-                        toast.success(`${user.fullName} removed from friends`);
-                        getUsers(); // refresh sidebar
-                        if (selectedUser?._id === user._id)
-                          setSelectedUser(null);
-                      } catch (error) {
-                        toast.error("Failed to remove friend",error);
-                      }
-                    }}
-                    className="text-error"
-                  >
-                    <UserMinus className="w-4 h-4" />
-                    Delete Friend
-                  </button>
-                </li>
-              </ul>
+                <div className="relative shrink-0">
+                  <img
+                    src={user.profilePic || "/avatar.png"}
+                    alt={user.fullName}
+                    className="size-12 object-cover rounded-full"
+                  />
+                  {isOnline && (
+                    <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-medium truncate text-sm sm:text-base">
+                      {user.fullName}
+                    </span>
+
+                    {/* Show unread badge in place of Online/Offline if there are unread messages */}
+                    {unreadCount > 0 ? (
+                      <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full shrink-0">
+                        {unreadCount}+ message
+                      </span>
+                    ) : (
+                      <span
+                        className={`text-xs shrink-0 ${
+                          isOnline ? "text-green-500 font-medium" : "text-zinc-500"
+                        }`}
+                      >
+                        {isOnline ? "Online" : "Offline"}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Last Message Preview with automatic truncation (...) */}
+                  <div className="text-xs text-zinc-400 truncate mt-0.5 max-w-[160px] sm:max-w-[200px]">
+                    {lastMsgText ? (
+                      lastMsgText
+                    ) : (
+                      <span className="italic opacity-50">No messages yet</span>
+                    )}
+                  </div>
+                </div>
+              </button>
+
+              {/* RIGHT SIDE: Three-dot menu */}
+              <div className="dropdown dropdown-end shrink-0">
+                <label tabIndex={0} className="btn btn-ghost btn-xs btn-circle">
+                  <MoreVertical className="w-4 h-4" />
+                </label>
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40"
+                >
+                  <li>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await axios.delete(`/api/requests/friend/${user._id}`, {
+                            withCredentials: true,
+                          });
+                          toast.success(`${user.fullName} removed from friends`);
+                          getUsers(); // refresh sidebar
+                          if (selectedUser?._id === user._id)
+                            setSelectedUser(null);
+                        } catch (error) {
+                          toast.error("Failed to remove friend", error);
+                        }
+                      }}
+                      className="text-error"
+                    >
+                      <UserMinus className="w-4 h-4" />
+                      Delete Friend
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </aside>
   );

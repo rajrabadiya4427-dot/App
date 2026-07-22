@@ -29,7 +29,33 @@ export const getusersForSidebar = async (req, res) => {
     // 3. Fetch user details (excluding passwords)
     const users = await User.find({ _id: { $in: userIds } }).select("-password");
 
-    res.json(users);
+    // 4. Attach last message for each user
+    const usersWithLastMessage = await Promise.all(
+      users.map(async (user) => {
+        const lastMsg = await Message.findOne({
+          $or: [
+            { senderId: userId, receiverId: user._id },
+            { senderId: user._id, receiverId: userId },
+          ],
+        })
+          .sort({ createdAt: -1 })
+          .select("text image senderId createdAt");
+
+        return {
+          ...user.toObject(),
+          lastMessage: lastMsg
+            ? {
+                text: lastMsg.text,
+                image: lastMsg.image,
+                senderId: lastMsg.senderId,
+                createdAt: lastMsg.createdAt,
+              }
+            : null,
+        };
+      })
+    );
+
+    res.json(usersWithLastMessage);
   } catch (error) {
     console.error("🔥 Sidebar Error:", error.message, error.stack);
     res.status(500).json({ message: "Error fetching sidebar users" });
