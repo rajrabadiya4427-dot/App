@@ -3,6 +3,7 @@ import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { useChatStore } from "./useChatStore";
+import { initPushNotifications } from "../lib/notification";
 
 const BASE_URL =
   import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
@@ -39,7 +40,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Account created successfully");
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data?.message || "Signup failed");
     } finally {
       set({ isSigningUp: false });
     }
@@ -54,7 +55,7 @@ export const useAuthStore = create((set, get) => ({
 
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data?.message || "Login failed");
     } finally {
       set({ isLoggingIn: false });
     }
@@ -62,12 +63,13 @@ export const useAuthStore = create((set, get) => ({
 
   logout: async () => {
     try {
+      await axiosInstance.post("/push/unsubscribe").catch(() => {});
       await axiosInstance.post("/auth/logout");
       set({ authUser: null });
       toast.success("Logged out successfully");
       get().disconnectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data?.message || "Logout failed");
     }
   },
 
@@ -79,18 +81,17 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Profile updated successfully");
     } catch (error) {
       console.log("error in update profile:", error);
-      toast.error(error.response.data.message);
+      toast.error(error.response.data?.message || "Failed to update profile");
     } finally {
       set({ isUpdatingProfile: false });
     }
   },
   emitWallpaperChange: (wallpaper, receiverId) => {
-  const { socket } = get();
-  if (!socket) return;
-  socket.emit("wallpaperChange", { wallpaper, receiverId });
-},
+    const { socket } = get();
+    if (!socket) return;
+    socket.emit("wallpaperChange", { wallpaper, receiverId });
+  },
 
-  // useAuthStore.js
   connectSocket: () => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
@@ -101,24 +102,23 @@ export const useAuthStore = create((set, get) => ({
     socket.connect();
     set({ socket });
 
+    // Initialize Push Notifications for current user
+    initPushNotifications();
+
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
     socket.on("friendDeleted", ({ friendId }) => {
-  // Refresh the sidebar to remove the deleted friend
-  import("../store/useChatStore").then(({ useChatStore }) => {
-    useChatStore.getState().getUsers();
-    // Also deselect if the deleted friend was selected
-    const { selectedUser, setSelectedUser } = useChatStore.getState();
-    if (selectedUser?._id === friendId) {
-      setSelectedUser(null);
-    }
-  });
-});
+      import("../store/useChatStore").then(({ useChatStore }) => {
+        useChatStore.getState().getUsers();
+        const { selectedUser, setSelectedUser } = useChatStore.getState();
+        if (selectedUser?._id === friendId) {
+          setSelectedUser(null);
+        }
+      });
+    });
 
-    // ✅ NEW: Listen for accepted requests and refresh sidebar
     socket.on("requestAccepted", () => {
-      // Trigger a refresh of the contact list
       import("../store/useChatStore").then(({ useChatStore }) => {
         useChatStore.getState().getUsers();
       });

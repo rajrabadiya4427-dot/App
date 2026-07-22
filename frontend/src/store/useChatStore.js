@@ -2,6 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
+import { triggerBrowserNotification } from "../lib/notification";
 
 export const useChatStore = create((set, get) => ({
   messages: [],
@@ -23,7 +24,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/messages/users");
       set({ users: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data?.message || "Failed to fetch users");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -35,7 +36,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get(`/messages/${userId}`);
       set({ messages: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data?.message || "Failed to fetch messages");
     } finally {
       set({ isMessagesLoading: false });
     }
@@ -49,7 +50,7 @@ export const useChatStore = create((set, get) => ({
       );
       set({ messages: [...messages, res.data] });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data?.message || "Failed to send message");
     }
   },
 
@@ -66,25 +67,38 @@ export const useChatStore = create((set, get) => ({
   },
 
   subscribeToMessages: () => {
-    const { selectedUser } = get();
-    if (!selectedUser) return;
-
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
+    socket.off("newMessage");
 
     socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser =
-        newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
+      const { selectedUser, messages, users } = get();
 
-      set({
-        messages: [...get().messages, newMessage],
-      });
+      const isMessageSentFromSelectedUser =
+        selectedUser && newMessage.senderId === selectedUser._id;
+
+      if (isMessageSentFromSelectedUser) {
+        set({
+          messages: [...messages, newMessage],
+        });
+      }
+
+      // Show notification if app is hidden/minimized OR message is from unselected user
+      if (document.hidden || !isMessageSentFromSelectedUser) {
+        const sender = users.find((u) => u._id === newMessage.senderId);
+        const title = newMessage.senderName || sender?.fullName || "New Message";
+        const body = newMessage.text || (newMessage.image ? "📷 Photo" : "Sent a message");
+        const icon = newMessage.senderPic || sender?.profilePic || "/chaticon.jpg";
+
+        triggerBrowserNotification(title, body, icon, newMessage.senderId);
+      }
     });
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
-    socket.off("newMessage");
+    if (socket) socket.off("newMessage");
   },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),

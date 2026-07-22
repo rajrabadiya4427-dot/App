@@ -3,6 +3,7 @@ import Message from "../models/message.model.js";
 import Request from "../models/request.js"; 
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
+import { sendPushNotification } from "../lib/push.js";
 
 export const getusersForSidebar = async (req, res) => {
   try {
@@ -60,18 +61,18 @@ export const sendMessage = async (req, res) => {
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
-  let imageUrl;
-if (image) {
-  try {
-    const uploadResponse = await cloudinary.uploader.upload(image, {
-      folder: "chat_images", // optional
-    });
-    imageUrl = uploadResponse.secure_url;
-  } catch (uploadError) {
-    console.error("Cloudinary upload error:", uploadError);
-    return res.status(400).json({ error: "Image upload failed" });
-  }
-}
+    let imageUrl;
+    if (image) {
+      try {
+        const uploadResponse = await cloudinary.uploader.upload(image, {
+          folder: "chat_images", // optional
+        });
+        imageUrl = uploadResponse.secure_url;
+      } catch (uploadError) {
+        console.error("Cloudinary upload error:", uploadError);
+        return res.status(400).json({ error: "Image upload failed" });
+      }
+    }
 
     const newMessage = new Message({
       senderId,
@@ -82,12 +83,28 @@ if (image) {
 
     await newMessage.save();
 
+    const sender = await User.findById(senderId).select("fullName profilePic");
+
+    const messageData = {
+      ...newMessage._doc,
+      senderName: sender?.fullName || "Someone",
+      senderPic: sender?.profilePic || "",
+    };
+
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage);
+      io.to(receiverSocketId).emit("newMessage", messageData);
     }
 
-    res.status(201).json(newMessage);
+    // Trigger Web Push Notification
+    sendPushNotification(receiverId, {
+      title: sender?.fullName || "New Message",
+      body: text || (imageUrl ? "📷 Photo" : "Sent a message"),
+      icon: sender?.profilePic || "/chaticon.jpg",
+      data: { url: "/", senderId: senderId.toString() },
+    });
+
+    res.status(201).json(messageData);
   } catch (error) {
     console.log("Error in sendMessage controller: ", error.message);
     res.status(500).json({ error: "Internal server error" });
