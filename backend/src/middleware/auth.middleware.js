@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import { generateToken } from "../lib/utils.js";
 
 export const protectRoute = async (req, res, next) => {
   try {
@@ -9,10 +10,27 @@ export const protectRoute = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized - No Token Provided" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      if (err.name === "TokenExpiredError") {
+        // Token expired after 7 days -> verify signature without checking expiration
+        decoded = jwt.verify(token, process.env.JWT_SECRET, {
+          ignoreExpiration: true,
+        });
 
-    if (!decoded) {
-      return res.status(401).json({ message: "Unauthorized - Invalid Token" });
+        // Generate brand-new 7-day token and update cookie
+        if (decoded && decoded.userId) {
+          generateToken(decoded.userId, res);
+        }
+      } else {
+        return res.status(401).json({ message: "Unauthorized - Invalid Token" });
+      }
+    }
+
+    if (!decoded || !decoded.userId) {
+      return res.status(401).json({ message: "Unauthorized - Invalid Token Payload" });
     }
 
     const user = await User.findById(decoded.userId).select("-password");
@@ -26,6 +44,6 @@ export const protectRoute = async (req, res, next) => {
     next();
   } catch (error) {
     console.log("Error in protectRoute middleware: ", error.message);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(401).json({ message: "Unauthorized - Invalid Token" });
   }
 };
